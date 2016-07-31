@@ -155,6 +155,9 @@ message(STATUS "${target_name}")
 # Define GNU standard installation directories
 include(GNUInstallDirs)
 
+# Add support for external project building
+include(ExternalProject)
+
 # Setup install paths
 if(NOT CMAKE_INSTALL_PREFIX)
 	if (${OS} STREQUAL "posix")
@@ -222,6 +225,14 @@ set(package-contact "px4users@googlegroups.com")
 # programs
 #
 find_package(PythonInterp REQUIRED)
+find_package(gazebo QUIET)
+if (NOT GAZEBO_MAJOR_VERSION)
+	set(GAZEBO_FOUND False)
+	message(STATUS "Gazebo not found")
+else()
+	set(GAZEBO_FOUND True)
+	message(STATUS "Found Gazebo ${GAZEBO_VERSION}")
+endif()
 
 #=============================================================================
 # cmake modules
@@ -394,14 +405,13 @@ set(CPACK_GENERATOR "ZIP")
 set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${CONFIG}-${version}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PROJECT_NAME}-${version}")
 set(CPACK_SOURCE_GENERATOR "ZIP;TBZ2")
+set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
+set(CPACK_SET_DESTDIR "OFF")
 if ("${CMAKE_SYSTEM}" MATCHES "Linux")
-  find_program(DPKG_PROGRAM dpkg)
-  if (EXISTS ${DPKG_PROGRAM})
-    list (APPEND CPACK_GENERATOR "DEB")
-  endif()
-endif()
-if (${OS} STREQUAL "posix")
-	set(CPACK_SET_DESTDIR "ON")
+	find_program(DPKG_PROGRAM dpkg)
+	if (EXISTS ${DPKG_PROGRAM})
+		list (APPEND CPACK_GENERATOR "DEB")
+	endif()
 endif()
 include(CPack)
 
